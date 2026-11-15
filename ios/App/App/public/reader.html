@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>脉书 · 原文</title>
+<style>
+:root{--bg:#f7f5ef;--panel:#fffdf8;--ink:#2a2620;--ink2:#6b6355;--ink3:#9a9183;--line:#e6e0d2;--accent:#8a3b2e;--soft:#f3e9e2}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.95 "Songti SC","SimSun",-apple-system,"PingFang SC","Microsoft YaHei",serif;display:flex;flex-direction:column}
+header{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fbf7ee,#f6f1e6)}
+h1{font-size:16px;margin:0;letter-spacing:.06em;color:var(--accent);font-weight:700}
+h1 span{color:var(--ink2);font-weight:400;font-size:13px;margin-left:10px;letter-spacing:0}
+.grow{flex:1 1 auto}
+button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:5px 14px;cursor:pointer;font:inherit;font-size:13.5px}
+button:hover{border-color:#d8c9b2}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+main{flex:1 1 auto;overflow:auto;padding:26px 0 80px}
+.wrap{max-width:860px;margin:0 auto;padding:0 26px}
+.p{border-left:3px solid transparent;padding:8px 0 8px 16px;color:var(--ink2);white-space:pre-wrap}
+.p .no{display:block;font-size:11.5px;color:var(--ink3);letter-spacing:.04em;margin-bottom:2px}
+.p.cur{border-left-color:var(--accent);background:var(--soft);border-radius:0 10px 10px 0;color:var(--ink)}
+.p.cur .no{color:var(--accent)}
+mark{background:#f6e7a8;padding:0 1px;border-radius:2px}
+.miss{color:var(--ink3);font-size:13.5px;padding:10px 0}
+footer{flex:0 0 auto;border-top:1px solid var(--line);padding:8px 20px;font-size:11.5px;color:var(--ink3);background:#fbf8f1;display:flex;gap:14px;align-items:center}
+</style>
+</head>
+<body>
+<header>
+  <h1><span id="title">原文</span><span id="sub"></span></h1>
+  <div class="grow"></div>
+  <button id="prev">← 上一段</button>
+  <button id="next">下一段 →</button>
+  <button id="copy">复制原文</button>
+</header>
+<main><div class="wrap" id="body"><div class="miss">正在载入…</div></div></main>
+<footer>
+  <span>数据来自科文中医古籍库（128 部 · 271,908 段）</span>
+  <span class="grow"></span>
+  <span id="pos"></span>
+</footer>
+<script src="reader-data.js"></script>
+<script>
+(function(){
+  var D = window.__MAISHU_CTX || { books: [], paras: {} };
+  var B = D.books, P = D.paras;
+  var q = new URLSearchParams(location.search);
+  var bid = q.get('b') || '';
+  var para = parseInt(q.get('p'), 10) || 1;
+  var hi = q.get('hl') || '';
+  var bi = B.findIndex(function(x){ return x.id === bid; });
+  var book = bi >= 0 ? B[bi] : null;
+  var cur = para;
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function text(b, p){ return P[b + ':' + p]; }
+
+  function render(){
+    var body = document.getElementById('body');
+    document.getElementById('title').textContent = book ? ('《' + book.name + '》第 ' + cur + ' 段') : ('第 ' + cur + ' 段');
+    document.getElementById('sub').textContent = book ? (book.cat || '') : '';
+    var rows = [];
+    var any = false;
+    for (var d = -2; d <= 2; d++) {
+      var p = cur + d;
+      if (p < 1) continue;
+      var t = text(bi, p);
+      if (typeof t !== 'string') { if (d === 0) { rows.push('<div class="miss">本段未收录。</div>'); } continue; }
+      any = true;
+      var html = esc(t);
+      if (d === 0 && hi) {
+        var parts = String(hi).split('|').filter(Boolean);
+        parts.forEach(function(w){ if (w) html = html.split(esc(w)).join('<mark>' + esc(w) + '</mark>'); });
+      }
+      rows.push('<div class="p' + (d === 0 ? ' cur' : '') + '"><span class="no">第 ' + p + ' 段</span>' + html + '</div>');
+    }
+    body.innerHTML = any ? rows.join('') : '<div class="miss">未找到这一段的原文。</div>';
+    document.getElementById('pos').textContent = '第 ' + cur + ' 段 / 共 ' + (book ? (book.paras || '—') : '—') + ' 段';
+    var c = document.querySelector('.p.cur');
+    if (c) c.scrollIntoView({ block: 'center' });
+  }
+
+  function go(n){
+    if (!book) return;
+    if (n < 1) return;
+    cur = n;
+    history.replaceState(null, '', '?b=' + encodeURIComponent(bid) + '&p=' + cur + (hi ? '&hl=' + encodeURIComponent(hi) : ''));
+    render();
+  }
+
+  document.getElementById('prev').onclick = function(){ go(cur - 1); };
+  document.getElementById('next').onclick = function(){ go(cur + 1); };
+  document.getElementById('copy').onclick = function(){
+    var t = text(bi, cur) || '';
+    try { navigator.clipboard.writeText(t); document.getElementById('copy').textContent = '已复制'; setTimeout(function(){ document.getElementById('copy').textContent = '复制原文'; }, 1200); } catch (e) { }
+  };
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowLeft') go(cur - 1);
+    if (e.key === 'ArrowRight') go(cur + 1);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+﻿{
+  "appId": "com.maishu.pulse",
+  "appName": "脉书",
+  "webDir": "www",
+  "server": { "androidScheme": "https" }
+}

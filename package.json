@@ -1,0 +1,14 @@
+﻿{
+  "name": "maishu-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "脉书 · 古籍脉象总汇",
+  "dependencies": {
+    "@capacitor/core": "8.6.0",
+    "@capacitor/android": "8.6.0",
+    "@capacitor/ios": "8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.0"
+  }
+}
