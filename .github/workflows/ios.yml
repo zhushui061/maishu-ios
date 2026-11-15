@@ -21,6 +21,12 @@ jobs:
       - name: 安装依赖
         run: npm install --no-audit --no-fund
 
+      - name: 网页资源改成 ASCII 文件名（避免 zip 里中文名乱码）
+        run: |
+          cd ios/App/App/public
+          if [ -f "脉书.html" ]; then mv "脉书.html" maishu.html; fi
+          sed -i '' 's/脉书\.html/maishu.html/g' index.html sw.js manifest.webmanifest || true
+
       - name: 安装 CocoaPods 依赖
         run: |
           cd ios/App
