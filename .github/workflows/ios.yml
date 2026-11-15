@@ -24,6 +24,7 @@ jobs:
       - name: 安装 CocoaPods 依赖
         run: |
           cd ios/App
+          sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" Podfile
           pod install --repo-update
 
       - name: 构建未签名 .app
@@ -35,6 +36,7 @@ jobs:
             -configuration Release \
             -sdk iphoneos \
             -derivedDataPath build \
+            IPHONEOS_DEPLOYMENT_TARGET=16.0 \
             -archivePath build/App.xcarchive \
             archive \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
