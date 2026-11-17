@@ -15,7 +15,7 @@ echo "==> 环境"; xcodebuild -version; node -v
 
 if [ "${SKIP_PODS:-0}" != "1" ]; then
   echo "==> pod install"
-  (cd ios/App && pod install --repo-update)
+  (cd ios/App && sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" Podfile && pod install --repo-update)
 fi
 
 echo "==> 归档"
@@ -27,6 +27,7 @@ xcodebuild \
   DEVELOPMENT_TEAM="$TEAM_ID" \
   PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE" \
   CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+  IPHONEOS_DEPLOYMENT_TARGET=16.0 \
   MARKETING_VERSION="1.0" \
   CODE_SIGN_STYLE=Automatic \
   -allowProvisioningUpdates \
