@@ -25,7 +25,6 @@ xcodebuild \
   -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release \
   -sdk iphoneos -archivePath "$ARCHIVE" archive \
   DEVELOPMENT_TEAM="$TEAM_ID" \
-  PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE" \
   CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
   IPHONEOS_DEPLOYMENT_TARGET=16.0 \
   MARKETING_VERSION="1.0" \
