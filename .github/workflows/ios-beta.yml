@@ -1,0 +1,46 @@
+name: 脉书 TestFlight
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: "构建号"
+        default: "2"
+permissions:
+  contents: read
+jobs:
+  beta:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    env:
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_BASE64: ${{ secrets.ASC_KEY_BASE64 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: 检查 Secrets
+        run: |
+          missing=0
+          for v in APPLE_TEAM_ID ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_BASE64; do
+            if [ -z "${!v}" ]; then echo "缺少 $v"; missing=1; fi
+          done
+          exit $missing
+      - name: 写入 ASC 私钥
+        run: |
+          mkdir -p "$HOME/.appstoreconnect/private_keys"
+          KEY="$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          printf '%s' "$ASC_KEY_BASE64" | openssl base64 -d -A > "$KEY"
+          chmod 600 "$KEY"
+          echo "ASC_KEY_PATH=$KEY" >> $GITHUB_ENV
+      - name: 安装依赖并同步
+        run: |
+          npm install --no-audit --no-fund
+          npx cap sync ios
+      - name: 构建并上传
+        env:
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
+        run: bash scripts/build-ios.sh
