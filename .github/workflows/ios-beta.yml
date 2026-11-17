@@ -38,7 +38,6 @@ jobs:
       - name: 安装依赖并同步
         run: |
           npm install --no-audit --no-fund
-          npx cap sync ios
       - name: 构建并上传
         env:
           TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
